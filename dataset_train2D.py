@@ -8,7 +8,8 @@ from scipy.ndimage.interpolation import zoom
 from torch.utils.data import Dataset
 from skimage.transform import resize
 
-#Partial implementation taken from https://github.com/Beckschen/TransUNet/blob/main/datasets/dataset_synapse.py
+# Partial implementation taken from https://github.com/Beckschen/TransUNet/blob/main/datasets/dataset_synapse.py
+
 
 def random_rot_flip(image):
     k = np.random.randint(0, 4)
@@ -29,27 +30,28 @@ class RandomGenerator(object):
         self.output_size = output_size
 
     def __call__(self, sample):
-        image, label = sample['image'], sample['label']
+        image, label = sample["image"], sample["label"]
 
         if random.random() > 0.5:
-            image= random_rot_flip(image)
+            image = random_rot_flip(image)
         elif random.random() > 0.5:
-            image= random_rotate(image)
+            image = random_rotate(image)
         x, y = image.shape
         if x != self.output_size[0] or y != self.output_size[1]:
-            image = zoom(image, (self.output_size[0] / x, self.output_size[1] / y), order=3)
+            image = zoom(
+                image, (self.output_size[0] / x, self.output_size[1] / y), order=3
+            )
         image = torch.from_numpy(image.astype(np.float32)).unsqueeze(0)
-        sample = {'image': image, 'label': label}
+        sample = {"image": image, "label": label}
         return sample
 
 
 class dataset_train(Dataset):
     def __init__(self, base_dir, list_dir, split, transform=None):
-        self.transform = transform  
+        self.transform = transform
         self.split = split
-        self.sample_list = open(os.path.join(list_dir, self.split+'.txt')).readlines()
+        self.sample_list = open(os.path.join(list_dir, self.split + ".txt")).readlines()
         self.data_dir = base_dir
-  
 
     def __len__(self):
         return len(self.sample_list)
@@ -60,23 +62,22 @@ class dataset_train(Dataset):
         img_label = lst[1]
         image_path = os.path.join(self.data_dir, img_name)
         image = nib.load(image_path)
-        
-        if img_label == '0':
-            label = 0
-        elif img_label == '1':
-            label = 1
-        elif img_label == '2':
-            label = 2
-        
-        image = np.array(image.get_fdata()[:, :]).squeeze().astype(np.float32)
-        #image = np.array(image.get_fdata()).squeeze().astype(np.float32)
-        #image = np.clip(image, -125, 275)
-        image = (image - np.min(image)) / (np.max(image) - np.min(image))
-        image = resize(image, (224,224), mode='constant')
-        
 
-        sample = {'image': image, 'label': label}
+        if img_label == "0":
+            label = 0
+        elif img_label == "1":
+            label = 1
+        elif img_label == "2":
+            label = 2
+
+        image = np.array(image.get_fdata()[:, :]).squeeze().astype(np.float32)
+        # image = np.array(image.get_fdata()).squeeze().astype(np.float32)
+        # image = np.clip(image, -125, 275)
+        image = (image - np.min(image)) / (np.max(image) - np.min(image))
+        image = resize(image, (224, 224), mode="constant")
+
+        sample = {"image": image, "label": label}
         if self.transform:
             sample = self.transform(sample)
-        #sample['case_name'] = self.sample_list[idx].strip('\n')
+        # sample['case_name'] = self.sample_list[idx].strip('\n')
         return sample
