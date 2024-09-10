@@ -29,11 +29,10 @@ seed = 8
 log_interval = 20
 l2_decay = 5e-4
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print("Using device:", device)
 source1_name = "GE"
 source2_name = "Philips"
 target_name = "Siemens"
-dataset = "ADNI1"
+dataset = "ADNI1_T1_All_MRI"
 
 IMG_PATH = "./Dataset/ADNI1"
 results_dir = "./Results"
@@ -46,28 +45,28 @@ if cuda:
 
 
 data_source_2d, class_name_2d = create_dataloaders_mri_2d(
-    root="data\\preprocess\\ADNI1_T1_MRI\\6_step_nifti_2d",
+    root="data\\preprocess\\ADNI1_T1_All_MRI\\6_step_nifti_2d",
     source_1=source1_name,
     source_2=source2_name,
     source_3=target_name,
-    transform=transforms.Compose([RandomGenerator(output_size=[img_size, img_size])]),
-    batch_size=batch_size,
+    transform_train=transforms.Compose([RandomGenerator(output_size=[img_size, img_size])]),
+    transform_test_val=None,
+    batch_size_train=batch_size,
+    batch_size_test_val=1,
     pin_memoery=True,
-    val_size=0.40,
-    test_size=0.50,
-    gen_val_test=False,
+    gen_test_val=False,
     num_workers=num_workers,
 )
 
 data_source_3d, class_name_3d = create_dataloaders_mri_3d(
-    root="data\\preprocess\\ADNI1_T1_MRI\\5_step_class_folders",
+    root="data\\preprocess\\ADNI1_T1_All_MRI\\5_step_class_folders",
     source_1=target_name,
-    transform=transforms.Compose([RandomGenerator(output_size=[img_size, img_size])]),
-    batch_size=batch_size,
+    transform_train=transforms.Compose([RandomGenerator(output_size=[img_size, img_size])]),
+    transform_test_val=None,
+    batch_size_train=batch_size,
+    batch_size_test_val=1,
     pin_memoery=True,
-    val_size=0.40,
-    test_size=0.50,
-    gen_val_test=True,
+    gen_test_val=True,
     num_workers=num_workers,
 )
 

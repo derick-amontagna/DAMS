@@ -19,7 +19,7 @@ print("Using device:", device)
 source1_name = "GE"
 source2_name = "Philips"
 target_name = "Siemens"
-dataset = "ADNI1"
+dataset = "ADNI1_T1_All_MRI"
 
 IMG_PATH = "./Dataset/ADNI1"
 results_dir = "./Results"
@@ -27,14 +27,12 @@ img_size = 224
 
 
 data_source_3d, class_name_3d = create_dataloaders_mri_3d(
-    root="data\\preprocess\\ADNI1_T1_MRI\\5_step_class_folders",
-    source_1=target_name,
+    root="data\\preprocess\\ADNI1_T1_All_MRI\\5_step_class_folders",
+    source_1=source2_name,
     transform=None,
     batch_size=1,
     pin_memoery=True,
-    val_size=0.3,
-    test_size=0.15,
-    gen_val_test=True,
+    gen_test_val=True,
     num_workers=1,
 )
 print("The length of target test set is: {}".format(len(data_source_3d)))
