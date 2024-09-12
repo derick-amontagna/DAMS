@@ -98,8 +98,8 @@ def transform_registration(
     for moving_image_path in tqdm(
         glob.glob(os.path.join(origin_path, "*.nii.gz"), recursive=True)
     ):
-        moving_image = ants.image_read(moving_image_path, reorient="ASR")
-        template_image = ants.image_read(template_path, reorient="ASR")
+        moving_image = ants.image_read(moving_image_path)
+        template_image = ants.image_read(template_path)
         transformation = ants.registration(
             fixed=template_image,
             moving=moving_image,

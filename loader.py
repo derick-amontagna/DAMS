@@ -60,7 +60,7 @@ def create_dataloaders_mri_2d(
                 val_source_split,
                 batch_size=batch_size_test_val,
                 shuffle=False,
-                num_workers=num_workers,
+                num_workers=1,
                 pin_memory=False,
             )
 

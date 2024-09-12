@@ -1,5 +1,5 @@
-# Implementation taken from https://github.com/easezyc/deep-transfer-learning/blob/master/MUDA/MFSAN/MFSAN_2src/resnet.py
-# Zhu Y, Zhuang F, Wang D. Aligning domain-specific distribution and classifier for cross-domain classification from multiple sources[C]//Proceedings of the AAAI Conference on Artificial Intelligence. 2019, 33: 5989-5996.
+#Implementation taken from https://github.com/easezyc/deep-transfer-learning/blob/master/MUDA/MFSAN/MFSAN_2src/resnet.py
+#Zhu Y, Zhuang F, Wang D. Aligning domain-specific distribution and classifier for cross-domain classification from multiple sources[C]//Proceedings of the AAAI Conference on Artificial Intelligence. 2019, 33: 5989-5996.
 
 
 import torch.nn as nn
@@ -11,19 +11,18 @@ from torch.autograd import Variable
 import torch
 
 
-__all__ = ["ResNet", "resnet50"]
+__all__ = ['ResNet', 'resnet50']
 
 
 model_urls = {
-    "resnet50": "https://download.pytorch.org/models/resnet50-19c8e357.pth",
+    'resnet50': 'https://download.pytorch.org/models/resnet50-19c8e357.pth',
 }
 
 
 def conv3x3(in_planes, out_planes, stride=1):
     """3x3 convolution with padding"""
-    return nn.Conv2d(
-        in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False
-    )
+    return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
+                     padding=1, bias=False)
 
 
 class Bottleneck(nn.Module):
@@ -33,9 +32,8 @@ class Bottleneck(nn.Module):
         super(Bottleneck, self).__init__()
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
         self.bn1 = nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(
-            planes, planes, kernel_size=3, stride=stride, padding=1, bias=False
-        )
+        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride,
+                               padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(planes)
         self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
         self.bn3 = nn.BatchNorm2d(planes * 4)
@@ -65,16 +63,14 @@ class Bottleneck(nn.Module):
 
         return out
 
-
 class ADDneck(nn.Module):
 
     def __init__(self, inplanes, planes, stride=1, downsample=None):
         super(ADDneck, self).__init__()
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
         self.bn1 = nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(
-            planes, planes, kernel_size=3, stride=stride, padding=1, bias=False
-        )
+        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride,
+                               padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(planes)
         self.conv3 = nn.Conv2d(planes, planes, kernel_size=1, bias=False)
         self.bn3 = nn.BatchNorm2d(planes)
@@ -97,13 +93,13 @@ class ADDneck(nn.Module):
 
         return out
 
-
 class ResNet(nn.Module):
 
     def __init__(self, block, layers, num_classes=1000):
         self.inplanes = 64
         super(ResNet, self).__init__()
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
+                               bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
@@ -112,20 +108,13 @@ class ResNet(nn.Module):
         self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2)
         self.avgpool = nn.AvgPool2d(7, stride=1)
-        self.baselayer = [
-            self.conv1,
-            self.bn1,
-            self.layer1,
-            self.layer2,
-            self.layer3,
-            self.layer4,
-        ]
+        self.baselayer = [self.conv1, self.bn1, self.layer1, self.layer2, self.layer3, self.layer4]
         self.fc = nn.Linear(512 * block.expansion, num_classes)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                m.weight.data.normal_(0, math.sqrt(2.0 / n))
+                m.weight.data.normal_(0, math.sqrt(2. / n))
             elif isinstance(m, nn.BatchNorm2d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
@@ -134,13 +123,8 @@ class ResNet(nn.Module):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = nn.Sequential(
-                nn.Conv2d(
-                    self.inplanes,
-                    planes * block.expansion,
-                    kernel_size=1,
-                    stride=stride,
-                    bias=False,
-                ),
+                nn.Conv2d(self.inplanes, planes * block.expansion,
+                          kernel_size=1, stride=stride, bias=False),
                 nn.BatchNorm2d(planes * block.expansion),
             )
 
@@ -153,10 +137,10 @@ class ResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        # print(x.shape)
+        #print(x.shape)
         if x.size()[1] == 1:
             x = x.repeat(1, 3, 1, 1)
-        # print(x.shape)
+        #print(x.shape)
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
@@ -169,7 +153,6 @@ class ResNet(nn.Module):
 
         return x
 
-
 class DAMS(nn.Module):
 
     def __init__(self, num_classes=31):
@@ -181,7 +164,7 @@ class DAMS(nn.Module):
         self.cls_fc_son2 = nn.Linear(256, num_classes)
         self.avgpool = nn.AvgPool2d(7, stride=1)
 
-    def forward(self, data_src, data_tgt=0, label_src=0, mark=1):
+    def forward(self, data_src, data_tgt = 0, label_src = 0, mark = 1):
         joint_loss = 0
         if self.training == True:
             if mark == 1:
@@ -204,12 +187,9 @@ class DAMS(nn.Module):
                 data_tgt_son2 = self.avgpool(data_tgt_son2)
                 data_tgt_son2 = data_tgt_son2.view(data_tgt_son2.size(0), -1)
                 data_tgt_son2 = self.cls_fc_son2(data_tgt_son2)
-                l1_loss = torch.abs(
-                    torch.nn.functional.softmax(data_tgt_son1, dim=1)
-                    - torch.nn.functional.softmax(data_tgt_son2, dim=1)
-                )
+                l1_loss = torch.abs(torch.nn.functional.softmax(data_tgt_son1, dim=1) - torch.nn.functional.softmax(data_tgt_son2, dim=1))
                 l1_loss = torch.mean(l1_loss)
-
+                
                 pred_src = self.cls_fc_son1(data_src)
                 cls_loss = F.nll_loss(F.log_softmax(pred_src, dim=1), label_src)
 
@@ -235,10 +215,7 @@ class DAMS(nn.Module):
                 data_tgt_son1 = self.avgpool(data_tgt_son1)
                 data_tgt_son1 = data_tgt_son1.view(data_tgt_son1.size(0), -1)
                 data_tgt_son1 = self.cls_fc_son1(data_tgt_son1)
-                l1_loss = torch.abs(
-                    torch.nn.functional.softmax(data_tgt_son1, dim=1)
-                    - torch.nn.functional.softmax(data_tgt_son2, dim=1)
-                )
+                l1_loss = torch.abs(torch.nn.functional.softmax(data_tgt_son1, dim=1) - torch.nn.functional.softmax(data_tgt_son2, dim=1))
                 l1_loss = torch.mean(l1_loss)
 
                 pred_src = self.cls_fc_son2(data_src)
@@ -261,11 +238,10 @@ class DAMS(nn.Module):
 
             return pred1, pred2
 
-
 def resnet50(pretrained=False, **kwargs):
 
     model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
     if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls["resnet50"]))
-
+        model.load_state_dict(model_zoo.load_url(model_urls['resnet50']))
+        
     return model
