@@ -13,13 +13,17 @@ from utils import find_classes
 
 class ADNIDataset3D(Dataset):
     def __init__(
-        self, root="data\\ADNI1\\ADNI1-Screening-Nifti", domain=None, split=None, transform=None
+        self,
+        root="data\\ADNI1\\ADNI1-Screening-Nifti",
+        domain=None,
+        split=None,
+        transform=None,
     ) -> None:
-        #logger.info("Loading Image and Label data from ADNI1".center(70, "+"))
+        # logger.info("Loading Image and Label data from ADNI1".center(70, "+"))
         self.data_path = os.path.join(os.getcwd(), root, domain, split)
         self.paths = list(pathlib.Path(self.data_path).glob("*/*.nii.gz"))
 
-        #logger.info(f"Loading Label Data".center(70, "+"))
+        # logger.info(f"Loading Label Data".center(70, "+"))
         self.transform = transform
         self.classes, self.class_to_idx = find_classes(self.data_path)
 

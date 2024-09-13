@@ -38,10 +38,10 @@ def create_dataloaders_mri_2d(
     }.items():
         # Split the Source Data into Train and Val
         train_source_split = ADNIDataset2D(
-            root=root, domain=data, split='train', transform=transform_train
+            root=root, domain=data, split="train", transform=transform_train
         )
         test_source_split = ADNIDataset2D(
-            root=root, domain=data, split='test', transform=transform_test_val
+            root=root, domain=data, split="test", transform=transform_test_val
         )
 
         # Get class names
@@ -49,13 +49,13 @@ def create_dataloaders_mri_2d(
 
         if gen_test_val:
             val_source_split = ADNIDataset2D(
-            root=root, domain=data, split='val', transform=transform_test_val
-        )
-            #logger.info(
+                root=root, domain=data, split="val", transform=transform_test_val
+            )
+            # logger.info(
             #    f"The length of {key} Val set is: {len(val_source_split)}".center(
             #        70, "+"
             #    )
-            #)
+            # )
             val_dataloader = DataLoader(
                 val_source_split,
                 batch_size=batch_size_test_val,
@@ -65,11 +65,11 @@ def create_dataloaders_mri_2d(
             )
 
         # Turn images into data loaders
-        #logger.info(
+        # logger.info(
         #    f"The length of {key} Train set is: {len(train_source_split)}".center(
         #        70, "+"
         #    )
-        #)
+        # )
         train_dataloader = DataLoader(
             train_source_split,
             batch_size=batch_size_train,
@@ -78,9 +78,9 @@ def create_dataloaders_mri_2d(
             pin_memory=pin_memoery,
         )
 
-        #logger.info(
+        # logger.info(
         #    f"The length of {key} Test set is: {len(test_source_split)}".center(70, "+")
-        #)
+        # )
         test_dataloader = DataLoader(
             test_source_split,
             batch_size=batch_size_test_val,
@@ -119,10 +119,10 @@ def create_dataloaders_mri_3d(
     for key, data in {"Source_1": source_1}.items():
         # Split the Source Data into Train and Val
         train_source_split = ADNIDataset3D(
-            root=root, domain=data, split='train', transform=transform_train
+            root=root, domain=data, split="train", transform=transform_train
         )
         test_source_split = ADNIDataset3D(
-            root=root, domain=data, split='test', transform=transform_test_val
+            root=root, domain=data, split="test", transform=transform_test_val
         )
 
         # Get class names
@@ -130,13 +130,13 @@ def create_dataloaders_mri_3d(
 
         if gen_test_val:
             val_source_split = ADNIDataset3D(
-            root=root, domain=data, split='val', transform=transform_test_val
-        )
-            #logger.info(
+                root=root, domain=data, split="val", transform=transform_test_val
+            )
+            # logger.info(
             #    f"The length of {key} Val set is: {len(val_source_split)}".center(
             #        70, "+"
             #    )
-            #)
+            # )
             val_dataloader = DataLoader(
                 val_source_split,
                 batch_size=batch_size_test_val,
@@ -146,11 +146,11 @@ def create_dataloaders_mri_3d(
             )
 
         # Turn images into data loaders
-        #logger.info(
+        # logger.info(
         #    f"The length of {key} Train set is: {len(train_source_split)}".center(
         #        70, "+"
         #    )
-        #)
+        # )
         train_dataloader = DataLoader(
             train_source_split,
             batch_size=batch_size_train,
@@ -159,9 +159,9 @@ def create_dataloaders_mri_3d(
             pin_memory=pin_memoery,
         )
 
-        #logger.info(
+        # logger.info(
         #    f"The length of {key} Test set is: {len(test_source_split)}".center(70, "+")
-        #)
+        # )
         test_dataloader = DataLoader(
             test_source_split,
             batch_size=batch_size_test_val,

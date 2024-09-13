@@ -50,7 +50,11 @@ def transform_dicom2nifti(
     if not os.path.exists(dst_path):
         os.makedirs(dst_path)
         logger.info(f"The new directory is created! - {dst_path}")
-    for dcm_path in tqdm(glob.glob(origin_path + f"{os.path.sep}*{os.path.sep}*{os.path.sep}*{os.path.sep}*")):
+    for dcm_path in tqdm(
+        glob.glob(
+            origin_path + f"{os.path.sep}*{os.path.sep}*{os.path.sep}*{os.path.sep}*"
+        )
+    ):
         id_dcm = dcm_path.split(os.path.sep)[-1]
         nifti_path = os.path.join(dst_path, id_dcm + ".nii.gz")
         dcm2nifti(dcm_path, nifti_path)
@@ -104,7 +108,7 @@ def transform_registration(
             fixed=template_image,
             moving=moving_image,
             type_of_transform="Affine",
-            verbose=True,
+            verbose=False,
         )
         registered_img_ants = transformation["warpedmovout"]
         registered_img_ants.to_file(
@@ -195,36 +199,36 @@ def train_val_test_split(
                 )
                 dict_split[domain] = {
                     "train": {
-                        class_type: train_df[
-                            train_df[column_class] == class_type
-                        ]['Image ID'].to_list()
+                        class_type: train_df[train_df[column_class] == class_type][
+                            "Image ID"
+                        ].to_list()
                         for class_type in train_df[column_class].unique().tolist()
                     },
                     "val": {
-                        class_type: val_df[
-                            val_df[column_class] == class_type
-                        ]['Image ID'].to_list()
+                        class_type: val_df[val_df[column_class] == class_type][
+                            "Image ID"
+                        ].to_list()
                         for class_type in val_df[column_class].unique().tolist()
                     },
                     "test": {
-                        class_type: test_df[
-                            test_df[column_class] == class_type
-                        ]['Image ID'].to_list()
+                        class_type: test_df[test_df[column_class] == class_type][
+                            "Image ID"
+                        ].to_list()
                         for class_type in test_df[column_class].unique().tolist()
                     },
                 }
             else:
                 dict_split[domain] = {
                     "train": {
-                        class_type: train_df[
-                            train_df[column_class] == class_type
-                        ]['Image ID'].to_list()
+                        class_type: train_df[train_df[column_class] == class_type][
+                            "Image ID"
+                        ].to_list()
                         for class_type in train_df[column_class].unique().tolist()
                     },
                     "test": {
-                        class_type: test_df[
-                            test_df[column_class] == class_type
-                        ]['Image ID'].to_list()
+                        class_type: test_df[test_df[column_class] == class_type][
+                            "Image ID"
+                        ].to_list()
                         for class_type in test_df[column_class].unique().tolist()
                     },
                 }
@@ -253,36 +257,36 @@ def train_val_test_split(
             )
             dict_split["All"] = {
                 "train": {
-                    class_type: train_df[
-                        train_df[column_class] == class_type
-                    ]['Image ID'].to_list()
+                    class_type: train_df[train_df[column_class] == class_type][
+                        "Image ID"
+                    ].to_list()
                     for class_type in train_df[column_class].unique().tolist()
                 },
                 "val": {
-                    class_type: val_df[
-                        val_df[column_class] == class_type
-                    ]['Image ID'].to_list()
+                    class_type: val_df[val_df[column_class] == class_type][
+                        "Image ID"
+                    ].to_list()
                     for class_type in val_df[column_class].unique().tolist()
                 },
                 "test": {
-                    class_type: test_df[
-                        test_df[column_class] == class_type
-                    ]['Image ID'].to_list()
+                    class_type: test_df[test_df[column_class] == class_type][
+                        "Image ID"
+                    ].to_list()
                     for class_type in test_df[column_class].unique().tolist()
                 },
             }
         else:
             dict_split["All"] = {
                 "train": {
-                    class_type: train_df[
-                        train_df[column_class] == class_type
-                    ]['Image ID'].to_list()
+                    class_type: train_df[train_df[column_class] == class_type][
+                        "Image ID"
+                    ].to_list()
                     for class_type in train_df[column_class].unique().tolist()
                 },
                 "test": {
-                    class_type: test_df[
-                        test_df[column_class] == class_type
-                    ]['Image ID'].to_list()
+                    class_type: test_df[test_df[column_class] == class_type][
+                        "Image ID"
+                    ].to_list()
                     for class_type in test_df[column_class].unique().tolist()
                 },
             }
@@ -462,7 +466,7 @@ def gen_3d_to_2d(
                 dst_path_image = os.path.join(
                     class_dst_path, f"{name_id}_slice_{i}.nii.gz"
                 )
-                image_data_2D = image_data[i, :, :].astype(np.float32)
+                image_data_2D = image_data[:, i, :].astype(np.float32)
                 nib.save(
                     nib.Nifti1Image(image_data_2D, affine=np.eye(4)), dst_path_image
                 )
@@ -503,7 +507,7 @@ def preprocess_pipeline(
 ):
     int_dir = os.path.join(BASE_DIR, "data", "preprocess", dataset_name)
     df = pd.read_csv(df_path)
-    df['Image ID'] = 'I' + df['Image ID'].astype(str)
+    df["Image ID"] = "I" + df["Image ID"].astype(str)
     if not os.path.exists(int_dir):
         os.makedirs(int_dir)
         logger.info(f"The new directory is created! - {int_dir}")
