@@ -7,7 +7,11 @@ import torchvision.transforms as transforms
 import os
 import math
 import resnet as models
+from dataset_train2D import dataset_train, RandomGenerator
 from dataset_test3D import dataset3D
+
+# from dataset_test3D import dataset3D
+from loader import create_dataloaders_mri_2d, create_dataloaders_mri_3d
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
@@ -18,18 +22,29 @@ print("Using device:", device)
 source1_name = "GE"
 source2_name = "Philips"
 target_name = "Siemens"
-dataset = "ADNI1"
+dataset = "ADNI1_T1_All_MRI"
 
 IMG_PATH = "./Dataset/ADNI1"
 results_dir = "./Results"
 img_size = 224
 
 
-db_test = dataset3D(
-    base_dir=IMG_PATH, list_dir="./Dataset", split="test_ADNI1_Siemens_MNI"
+data_source_3d, class_name_3d = create_dataloaders_mri_3d(
+    root="data\\preprocess\\ADNI1_T1_All_MRI\\5_step_class_folders",
+    source_1=target_name,
+    transform_train=transforms.Compose(
+        [RandomGenerator(output_size=[img_size, img_size])]
+    ),
+    transform_test_val=None,
+    batch_size_train=32,
+    batch_size_test_val=1,
+    pin_memoery=True,
+    gen_test_val=True,
+    num_workers=4,
 )
-target_test_loader = DataLoader(db_test, batch_size=1, shuffle=False, num_workers=1)
-print("The length of target test set is: {}".format(len(db_test)))
+
+target_test_loader = data_source_3d["Source_1"]["Test"]
+target_valid_loader = data_source_3d["Source_1"]["Val"]
 
 
 def test(model, loader):

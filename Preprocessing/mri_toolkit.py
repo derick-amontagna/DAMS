@@ -139,7 +139,7 @@ def transform_extract_relevant_slices(
 
     for path in tqdm(glob.glob(os.path.join(origin_path, "*.nii.gz"), recursive=True)):
         image = ants.image_read(
-            path, reorient="ASR"
+            path
         )  # Z, Y, X - IAL = Inferior-to-superior, Anterior-to-posterior, Left-to-right
         image_data = image.numpy()  # -> (Z,Y,X)
         image_shape = image_data.shape
@@ -152,12 +152,12 @@ def transform_extract_relevant_slices(
             slice_thickness = image.spacing[0]
 
         # Extract the desired slices
-        extracted_data = image_data[bottom_discard:top_discard, :, :]
+        extracted_data = image_data[:, bottom_discard:top_discard, :]
 
         # Create a new ANTsImage from the extracted data
         extracted_image = ants.from_numpy(extracted_data)
-        mri_image_voxel = ants.resample_image(extracted_image, voxel_resample, False, 1)
-        mri_image_voxel.to_file(
+        # mri_image_voxel = ants.resample_image(extracted_image, voxel_resample, False, 1)
+        extracted_image.to_file(
             os.path.join(
                 path.replace(
                     origin_path.split(os.path.sep)[-1],
@@ -462,7 +462,7 @@ def gen_3d_to_2d(
             name_id = path_mri.split(os.path.sep)[-1].split(".")[0]
             image = nib.load(path_mri)
             image_data = image.get_fdata()
-            for i in range(image_data.shape[0]):
+            for i in range(image_data.shape[1]):
                 dst_path_image = os.path.join(
                     class_dst_path, f"{name_id}_slice_{i}.nii.gz"
                 )
