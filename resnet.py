@@ -172,7 +172,7 @@ class ResNet(nn.Module):
 
 class DAMS(nn.Module):
 
-    def __init__(self, num_classes=31):
+    def __init__(self, num_classes=31, W_DA=False):
         super(DAMS, self).__init__()
         self.sharedNet = resnet50(True)
         self.sonnet1 = ADDneck(2048, 256)
@@ -180,6 +180,7 @@ class DAMS(nn.Module):
         self.cls_fc_son1 = nn.Linear(256, num_classes)
         self.cls_fc_son2 = nn.Linear(256, num_classes)
         self.avgpool = nn.AvgPool2d(7, stride=1)
+        self.W_DA = W_DA
 
     def forward(self, data_src, data_tgt=0, label_src=0, mark=1):
         joint_loss = 0
@@ -254,12 +255,15 @@ class DAMS(nn.Module):
             fea_son1 = fea_son1.view(fea_son1.size(0), -1)
             pred1 = self.cls_fc_son1(fea_son1)
 
-            fea_son2 = self.sonnet2(data)
-            fea_son2 = self.avgpool(fea_son2)
-            fea_son2 = fea_son2.view(fea_son2.size(0), -1)
-            pred2 = self.cls_fc_son2(fea_son2)
+            if not self.W_DA:
+                fea_son2 = self.sonnet2(data)
+                fea_son2 = self.avgpool(fea_son2)
+                fea_son2 = fea_son2.view(fea_son2.size(0), -1)
+                pred2 = self.cls_fc_son2(fea_son2)
 
-            return pred1, pred2
+                return pred1, pred2
+            else:
+                return pred1
 
 
 def resnet50(pretrained=False, **kwargs):

@@ -57,7 +57,10 @@ def transform_dicom2nifti(
     ):
         id_dcm = dcm_path.split(os.path.sep)[-1]
         nifti_path = os.path.join(dst_path, id_dcm + ".nii.gz")
-        dcm2nifti(dcm_path, nifti_path)
+        try:
+            dcm2nifti(dcm_path, nifti_path)
+        except:
+            print(f"Erro with image: {dcm_path}")
 
 
 @pass_step
@@ -358,9 +361,17 @@ def gen_class_folders(
     test_size: float = 0.15,
     val_size: float = 0.15,
 ):
-    df[["Manufacturer", "Model"]] = df["Imaging Protocol"].str.extract(
-        "Manufacturer=(.+);Mfg Model=(.+)", expand=True
-    )
+    # Filter Images
+    df = df[
+        df["Image ID"].isin(
+            [
+                id.split(os.path.sep)[-1].split(".")[0]
+                for id in glob.glob(
+                    os.path.join(origin_path, "*.nii.gz"), recursive=True
+                )
+            ]
+        )
+    ]
     if domain_manufacturer or domain_model:
         logger.info("Create the With Domain")
         if domain_manufacturer:
@@ -507,6 +518,20 @@ def preprocess_pipeline(
 ):
     int_dir = os.path.join(BASE_DIR, "data", "preprocess", dataset_name)
     df = pd.read_csv(df_path)
+    df[["Manufacturer", "Model"]] = df["Imaging Protocol"].str.extract(
+        "Manufacturer=(.+);Mfg Model=(.+)", expand=True
+    )
+    if "ADNI2" in dataset_name:
+        df = df.replace(
+            {
+                "GE MEDICAL SYSTEMS": "GE",
+                "Philips Healthcare": "Philips",
+                "Philips Medical Systems": "Philips",
+                "SIEMENS|PixelMed": "Siemens",
+                "SIEMENS": "Siemens",
+            },
+            regex=False,
+        )
     df["Image ID"] = "I" + df["Image ID"].astype(str)
     if not os.path.exists(int_dir):
         os.makedirs(int_dir)

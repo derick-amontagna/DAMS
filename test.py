@@ -20,9 +20,11 @@ cuda = True
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Using device:", device)
 source1_name = "GE"
-source2_name = "Philips"
-target_name = "Siemens"
+source2_name = "Siemens"
+target_name = "Philips"
 dataset = "ADNI1_T1_All_MRI"
+type_training = "w_DA"
+W_DA = True
 
 IMG_PATH = "./Dataset/ADNI1"
 results_dir = "./Results"
@@ -30,8 +32,9 @@ img_size = 224
 
 
 data_source_3d, class_name_3d = create_dataloaders_mri_3d(
-    root="data\\preprocess\\ADNI1_T1_All_MRI\\5_step_class_folders",
-    source_1=target_name,
+    root=f"data\\preprocess\\{dataset}\\5_step_class_folders",
+    source_1=source1_name,
+    source_2=source2_name,
     transform_train=transforms.Compose(
         [RandomGenerator(output_size=[img_size, img_size])]
     ),
@@ -41,13 +44,13 @@ data_source_3d, class_name_3d = create_dataloaders_mri_3d(
     pin_memoery=True,
     gen_test_val=True,
     num_workers=4,
+    concat_s1_s2=True,
 )
 
 target_test_loader = data_source_3d["Source_1"]["Test"]
-target_valid_loader = data_source_3d["Source_1"]["Val"]
 
 
-def test(model, loader):
+def test(model, loader, W_DA=False):
     model.eval()
     test_loss = 0
     correct = 0
@@ -63,22 +66,33 @@ def test(model, loader):
             if cuda:
                 data_3D, target = data_3D.cuda(), target.cuda()
             for slice_number in range(
-                95, 125
+                94, 126
             ):  # this slice range in the 2D coronal plane used to train the model
                 temp_x = data_3D[:, :, :, slice_number, :]
                 temp_x = temp_x.repeat(1, 3, 1, 1)
                 data, target = Variable(temp_x), Variable(target)
-                pred1, pred2 = model(data, mark=0)
-                pred1 = torch.nn.functional.softmax(pred1, dim=1)
-                pred2 = torch.nn.functional.softmax(pred2, dim=1)
-                pred = (pred1 + pred2) / 2
-                test_loss += F.nll_loss(F.log_softmax(pred, dim=1), target).item()
-                pred = pred.data.max(1)[1]
-                temp_correct += pred.eq(target.data.view_as(pred)).cpu().sum()
-                pred = pred1.data.max(1)[1]
-                temp_correct1 += pred.eq(target.data.view_as(pred)).cpu().sum()
-                pred = pred2.data.max(1)[1]
-                temp_correct2 += pred.eq(target.data.view_as(pred)).cpu().sum()
+                if W_DA:
+                    pred1 = model(data, mark=0)
+                    pred1 = torch.nn.functional.softmax(pred1, dim=1)
+                    pred = pred1
+                    test_loss += F.nll_loss(F.log_softmax(pred, dim=1), target).item()
+                    pred = pred.data.max(1)[1]
+                    temp_correct += pred.eq(target.data.view_as(pred)).cpu().sum()
+                    pred = pred1.data.max(1)[1]
+                    temp_correct1 += pred.eq(target.data.view_as(pred)).cpu().sum()
+                    temp_correct2 = 0
+                else:
+                    pred1, pred2 = model(data, mark=0)
+                    pred1 = torch.nn.functional.softmax(pred1, dim=1)
+                    pred2 = torch.nn.functional.softmax(pred2, dim=1)
+                    pred = (pred1 + pred2) / 2
+                    test_loss += F.nll_loss(F.log_softmax(pred, dim=1), target).item()
+                    pred = pred.data.max(1)[1]
+                    temp_correct += pred.eq(target.data.view_as(pred)).cpu().sum()
+                    pred = pred1.data.max(1)[1]
+                    temp_correct1 += pred.eq(target.data.view_as(pred)).cpu().sum()
+                    pred = pred2.data.max(1)[1]
+                    temp_correct2 += pred.eq(target.data.view_as(pred)).cpu().sum()
 
             if temp_correct >= 15:
                 correct = correct + 1
@@ -122,6 +136,8 @@ if __name__ == "__main__":
             + source2_name
             + "_to_"
             + target_name
+            + "_type_"
+            + type_training
             + "_max_accuracy.pth"
         )
     )
